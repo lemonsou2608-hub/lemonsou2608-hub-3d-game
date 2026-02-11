@@ -3,76 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>1st-Person 3D Exploration Game</title>
+    <title>3D Forest Exploration Game</title>
     <style>
         body { margin: 0; overflow: hidden; }
-        canvas { display: block; }
+        #gameCanvas { display: block; }
+        #ui { position: absolute; color: white; }
+        #hp, #distance, #time { font-size: 24px; }
+        #settingsPanel { background: rgba(0, 0, 0, 0.7); padding: 10px; border-radius: 5px; }
     </style>
 </head>
 <body>
-    <script src="https://threejs.org/build/three.js"></script>
-    <script src="https://rawgit.com/mrdoob/three.js/master/examples/js/controls/PointerLockControls.js"></script>
+    <div id="ui">
+        <div id="hp">HP: 100</div>
+        <div id="distance">Distance: 0m</div>
+        <div id="time">Time: 00:00</div>
+        <div id="settingsPanel">
+            <label for="constellationToggle">Toggle Constellation:</label>
+            <input type="checkbox" id="constellationToggle">
+            <label for="timeSpeedSlider">Time Speed:</label>
+            <input type="range" id="timeSpeedSlider" min="1" max="10" step="1" value="5">
+        </div>
+    </div>
+    <canvas id="gameCanvas"></canvas>
     <script>
-        let scene, camera, renderer;
-        let controls;
-        let enemies = [];
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
 
-        function init() {
-            scene = new THREE.Scene();
-            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        let hp = 100;
+        let distance = 0;
+        let time = 0;
+        let timeSpeed = 5;
 
-            renderer = new THREE.WebGLRenderer();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            document.body.appendChild(renderer.domElement);
-
-            controls = new THREE.PointerLockControls(camera);
-            scene.add(controls.getObject());
-
-            const light = new THREE.DirectionalLight(0xffffff, 1);
-            light.position.set(5, 10, 7.5);
-            scene.add(light);
-
-            createForest();
-            createEnemies();
-            animate();
+        function updateUI() {
+            document.getElementById('hp').innerText = `HP: ${hp}`;
+            document.getElementById('distance').innerText = `Distance: ${distance}m`;
+            document.getElementById('time').innerText = `Time: ${new Date(time * 1000).toISOString().substr(11, 8)}`;
         }
 
-        function createForest() {
-            const treeGeometry = new THREE.CylinderGeometry(0.2, 0.5, 2);
-            const treeMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
-
-            for (let i = 0; i < 50; i++) {
-                const tree = new THREE.Mesh(treeGeometry, treeMaterial);
-                tree.position.set(Math.random() * 200 - 100, 1, Math.random() * 200 - 100);
-                scene.add(tree);
-            }
+        function gameLoop() {
+            // Game logic here...
+            distance += timeSpeed; // Simulate distance over time
+            time += 1; // Increment time
+            updateUI();
+            requestAnimationFrame(gameLoop);
         }
 
-        function createEnemies() {
-            const enemyGeometry = new THREE.BoxGeometry(1, 1, 1);
-            const enemyMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000 });
-
-            for (let i = 0; i < 5; i++) {
-                const enemy = new THREE.Mesh(enemyGeometry, enemyMaterial);
-                enemy.position.set(Math.random() * 200 - 100, 0.5, Math.random() * 200 - 100);
-                enemies.push(enemy);
-                scene.add(enemy);
-            }
-        }
-
-        function animate() {
-            requestAnimationFrame(animate);
-            controls.update();
-            renderer.render(scene, camera);
-        }
-
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
+        document.getElementById('timeSpeedSlider').addEventListener('input', (event) => {
+            timeSpeed = event.target.value;
         });
 
-        window.onload = init;
+        gameLoop();
     </script>
 </body>
 </html>
