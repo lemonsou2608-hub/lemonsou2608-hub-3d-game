@@ -3,15 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Game</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.8.0/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/cannon-es/0.20.0/cannon-es.min.js"></script>
+    <title>1st-Person 3D Exploration Game</title>
+    <style>
+        body { margin: 0; overflow: hidden; }
+        canvas { display: block; }
+    </style>
 </head>
 <body>
-    <canvas id="gameCanvas"></canvas>
+    <script src="https://threejs.org/build/three.js"></script>
+    <script src="https://rawgit.com/mrdoob/three.js/master/examples/js/controls/PointerLockControls.js"></script>
     <script>
-        // JavaScript code for initializing the 3D game will go here
+        let scene, camera, renderer;
+        let controls;
+        let enemies = [];
+
+        function init() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+            renderer = new THREE.WebGLRenderer();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            controls = new THREE.PointerLockControls(camera);
+            scene.add(controls.getObject());
+
+            const light = new THREE.DirectionalLight(0xffffff, 1);
+            light.position.set(5, 10, 7.5);
+            scene.add(light);
+
+            createForest();
+            createEnemies();
+            animate();
+        }
+
+        function createForest() {
+            const treeGeometry = new THREE.CylinderGeometry(0.2, 0.5, 2);
+            const treeMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+
+            for (let i = 0; i < 50; i++) {
+                const tree = new THREE.Mesh(treeGeometry, treeMaterial);
+                tree.position.set(Math.random() * 200 - 100, 1, Math.random() * 200 - 100);
+                scene.add(tree);
+            }
+        }
+
+        function createEnemies() {
+            const enemyGeometry = new THREE.BoxGeometry(1, 1, 1);
+            const enemyMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000 });
+
+            for (let i = 0; i < 5; i++) {
+                const enemy = new THREE.Mesh(enemyGeometry, enemyMaterial);
+                enemy.position.set(Math.random() * 200 - 100, 0.5, Math.random() * 200 - 100);
+                enemies.push(enemy);
+                scene.add(enemy);
+            }
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        window.onload = init;
     </script>
 </body>
 </html>
